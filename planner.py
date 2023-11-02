@@ -3,91 +3,16 @@ import sys
 from colorama import Fore, Back, Style
 import keyboard
 from time import sleep
+import pickle
+
+from project_tree_class import TreeCell
+
+DEFAULT_FILE_PATH = os.path.join(__file__.rsplit('\\',1)[0],'projects.pickle')
 
 clear = lambda: os.system("cls")
 write = sys.stdout.write
-class TreeCell:
-    __slots__ = ("_name","_sub_cells","_open","_note",'_depth')
-    def __init__(self,name:str,sub_cells:list=None,note:str='',open:bool = True):
-        if not name.strip(): raise ValueError('Name can\'t be empty')
-        self._name = name
-        if sub_cells:self._sub_cells=sub_cells
-        else: self._sub_cells=[]
-        self._open=open
-        self._note=note
-        self._depth=0
 
-    @property
-    def sub_cells(self):
-        return self._sub_cells
-    
-    @sub_cells.setter
-    def sub_cells(self,value):
-        if not value: self._sub_cells=[]
-        if not isinstance(value,list): raise TypeError('sub_cells should be a list')
-        for cell in value:
-            if not isinstance(cell,TreeCell): raise TypeError('sub_cells should be a list of TreeCell instances or empty list')
-        self._sub_cells=value
-    
-    @property
-    def open(self):
-        return self._open
-    
-    @open.setter
-    def open(self,value):
-        if not isinstance(value,bool): raise TypeError('open should be True or False')
-        value=bool(value)
-        self._open=value
 
-    @property
-    def depth(self):
-        return self._depth
-    
-    @property
-    def note(self):
-        return self._note
-    
-    @property
-    def name(self):
-        return self._name
-    
-    
-    '''def __getitem__(self,key):
-        return self._sub_cells[key]'''
-    
-    '''def __setitem__(self,key,value):
-        self._sub_cells[key]+=value'''
-
-    def __iadd__(self,new_cell):
-        if not isinstance(new_cell,TreeCell): raise TypeError("Only instances of TreeCell class can be added")
-        new_cell._depth=self._depth+1
-        self._sub_cells.append(new_cell)
-        return self
-
-    def __bool__(self):
-        if self._sub_cells: return True
-        else: return False
-    
-    def __str__(self):
-        return self._name
-    
-    def __iter__(self):
-        return iter(self._sub_cells)
-    
-    def add_subcell(self,new_cell):
-        if not isinstance(new_cell,TreeCell): raise TypeError("Only instances of TreeCell class can be added")
-        new_cell._depth=self._depth+1
-        self._sub_cells.append(new_cell)
-    
-    def show_branches(self)->list:
-        branch_list=[self]
-        if self._open and bool(self):
-            for cell in self._sub_cells:
-                branch_list.extend(cell.show_branches())
-        return branch_list
-    
-    def switch_state(self):
-        self._open = not self._open
 
 def add_subcell(cell:TreeCell):
     print('Adding subsection')
@@ -102,7 +27,7 @@ def add_subcell(cell:TreeCell):
             print(e)
         else:
             break
-    
+
 
 def highlight(text:str)->str:
     return Fore.BLACK + Back.WHITE + text + Style.RESET_ALL
@@ -114,7 +39,7 @@ def project_display(visible_branch:TreeCell,selected_cell:int=0)->None:
             line=highlight(line)
         print(line)
         
-def display(project:TreeCell):
+def display_logic(project:TreeCell):
     selected_cell=0
     while True:
         clear()
@@ -134,11 +59,42 @@ def display(project:TreeCell):
             print(visible_cells[selected_cell].note)
             sleep(0.2)
             keyboard.read_key()
+            
         keyboard.release(key)
         selected_cell %= len(visible_cells)
 
+def save_projects(project_to_save,file_path:str=DEFAULT_FILE_PATH):
+    with open(file_path,'bw') as fh:
+        pickle.dump(project_to_save,fh)
 
+def load_projects(file_path:str=DEFAULT_FILE_PATH):
+    try:
+        with open(file_path,'br') as fh:
+            return pickle.load(fh)
+    except FileNotFoundError:
+        open(file_path,'x')
+        return []
+    except EOFError:
+        return []
+    
 
 if __name__=='__main__':
-    projects=[]  #get_saved_projects
-    display(TreeCell('1',note='asdfg'))
+    projects=load_projects()
+    print('0. Create new project plan')
+    for id,project in enumerate(projects):
+        print(f"{id+1}. {project}")
+    project_id=int(input('Project id:'))
+    if project_id==0:
+        while True:
+            print('Create project')
+            try:
+                name=input('Name: ')
+                note=input('Note(optional):')
+                projects.append(TreeCell(name,note=note.strip()))
+            except ValueError as e:
+                print(e)
+            else:
+                break
+        display_logic(projects[-1])
+    else: display_logic(projects[project_id-1])
+    save_projects(projects)
