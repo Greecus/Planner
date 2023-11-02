@@ -77,8 +77,7 @@ def load_projects(file_path:str=DEFAULT_FILE_PATH):
     except EOFError:
         return []
     
-
-if __name__=='__main__':
+def main():
     projects=load_projects()
     print('0. Create new project plan')
     for id,project in enumerate(projects):
@@ -98,3 +97,6 @@ if __name__=='__main__':
         display_logic(projects[-1])
     else: display_logic(projects[project_id-1])
     save_projects(projects)
+
+if __name__=='__main__':
+    main()
