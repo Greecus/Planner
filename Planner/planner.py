@@ -10,6 +10,9 @@ try:
 except ModuleNotFoundError:
     from Planner.project_tree_class import TreeCell
 
+class DeleteProject(Exception):
+    pass
+
 just_fix_windows_console()
 
 DEFAULT_FILE_NAME = 'projects.pickle'
@@ -71,6 +74,7 @@ def display_logic(project:TreeCell):
             keyboard.read_key()
         elif key=='r':
             print('del')
+            if visible_cells[selected_cell].depth==0: raise DeleteProject
             visible_cells[selected_cell].parent.sub_cells.remove(visible_cells[selected_cell])
             
         keyboard.release(key)
@@ -100,20 +104,23 @@ def main():
     sleep(0.2)
     input_safeguard()
     project_id=int(input('Project id:'))
-    if project_id==0:
-        while True:
-            print('Create project')
-            try:
-                input_safeguard()
-                name=input('Name: ')
-                note=input('Note(optional):')
-                projects.append(TreeCell(name,note=note.strip()))
-            except ValueError as e:
-                print(e)
-            else:
-                break
-        display_logic(projects[-1])
-    else: display_logic(projects[project_id-1])
+    try:
+        if project_id==0:
+            while True:
+                print('Create project')
+                try:
+                    input_safeguard()
+                    name=input('Name: ')
+                    note=input('Note(optional):')
+                    projects.append(TreeCell(name,note=note.strip()))
+                except ValueError as e:
+                    print(e)
+                else:
+                    break
+            display_logic(projects[-1])
+        else: display_logic(projects[project_id-1])
+    except DeleteProject:
+        del projects[project_id-1]
     save_projects(projects)
 
 if __name__=='__main__':

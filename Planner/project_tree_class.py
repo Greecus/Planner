@@ -33,6 +33,14 @@ class TreeCell:
         self._open=value
 
     @property
+    def parent(self):
+        return self._parent
+    
+    @parent.setter
+    def parent(self,value):
+        self._parent=value
+        
+    @property
     def depth(self):
         return self._depth
     
@@ -43,17 +51,6 @@ class TreeCell:
     @property
     def name(self):
         return self._name
-    
-    @property
-    def parent(self):
-        return self._parent
-    
-    
-    '''def __getitem__(self,key):
-        return self._sub_cells[key]'''
-    
-    '''def __setitem__(self,key,value):
-        self._sub_cells[key]+=value'''
 
     def __bool__(self):
         if self._sub_cells: return True
