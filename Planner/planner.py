@@ -62,7 +62,7 @@ def display_logic(project:TreeCell):
         key=None
         while not key:
             key=keyboard.read_key()
-            if key not in ['up','down','esc','enter','a','n','r']: key=None
+            if key not in ['up','down','esc','enter','a','n','r','l']: key=None
         if key=='up': selected_cell-=1
         elif key=='down': selected_cell+=1
         elif key=='enter': visible_cells[selected_cell].switch_state()
@@ -76,6 +76,12 @@ def display_logic(project:TreeCell):
             print('del')
             if visible_cells[selected_cell].depth==0: raise DeleteProject
             visible_cells[selected_cell].parent.sub_cells.remove(visible_cells[selected_cell])
+        elif key=='l':
+            print('Locked')
+            unlock=None
+            while not unlock:
+                unlock=input('unlock? y/n: ')
+                if unlock!='y': unlock=None
             
         keyboard.release(key)
         selected_cell %= len(visible_cells)
