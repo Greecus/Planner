@@ -1,5 +1,5 @@
 class TreeCell:
-    __slots__ = ("_name","_sub_cells","_open","_note",'_depth')
+    __slots__ = ("_name","_sub_cells","_open","_note",'_depth','_parent')
     def __init__(self,name:str,sub_cells:list=None,note:str='',open:bool = True):
         if not name.strip(): raise ValueError('Name can\'t be empty')
         self._name = name
@@ -8,6 +8,7 @@ class TreeCell:
         self._open=open
         self._note=note
         self._depth=0
+        self._parent=None
 
     @property
     def sub_cells(self):
@@ -43,18 +44,16 @@ class TreeCell:
     def name(self):
         return self._name
     
+    @property
+    def parent(self):
+        return self._parent
+    
     
     '''def __getitem__(self,key):
         return self._sub_cells[key]'''
     
     '''def __setitem__(self,key,value):
         self._sub_cells[key]+=value'''
-
-    def __iadd__(self,new_cell):
-        if not isinstance(new_cell,TreeCell): raise TypeError("Only instances of TreeCell class can be added")
-        new_cell._depth=self._depth+1
-        self._sub_cells.append(new_cell)
-        return self
 
     def __bool__(self):
         if self._sub_cells: return True
@@ -65,10 +64,11 @@ class TreeCell:
     
     def __iter__(self):
         return iter(self._sub_cells)
-    
+        
     def add_subcell(self,new_cell):
         if not isinstance(new_cell,TreeCell): raise TypeError("Only instances of TreeCell class can be added")
         new_cell._depth=self._depth+1
+        new_cell._parent=self
         self._sub_cells.append(new_cell)
     
     def show_branches(self)->list:
